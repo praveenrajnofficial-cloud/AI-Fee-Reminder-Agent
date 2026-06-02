@@ -1,0 +1,150 @@
+{
+  "name": "Payment Remainder Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 12,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -224,
+        16
+      ],
+      "id": "598cc0f6-8966-48b4-b104-585b12fd6e7b",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1nBr6gdoCRIgKpz3agSaeJszz5rhWMaaV0IKF5rzZcSI",
+          "mode": "list",
+          "cachedResultName": "Customer data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nBr6gdoCRIgKpz3agSaeJszz5rhWMaaV0IKF5rzZcSI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nBr6gdoCRIgKpz3agSaeJszz5rhWMaaV0IKF5rzZcSI/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -16,
+        16
+      ],
+      "id": "0ff036f7-95c4-4398-82b2-a43571d2e166",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Sf3FGbSEWjTi1d2X",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const today = new Date();\ntoday.setHours(0, 0, 0, 0);\n\nconst matchingRows = [];\n\nfor (const item of $input.all()) {\n    const dueDate = new Date(item.json[\"Due Date\"]);\n    dueDate.setHours(0, 0, 0, 0);\n\n    if (dueDate.getTime() === today.getTime()) {\n        matchingRows.push(item);\n    }\n}\n\nreturn matchingRows;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        16
+      ],
+      "id": "e935886f-c7ae-4f00-9fd4-a71b6b0255ab",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "Payment Fee Remainder ",
+        "emailType": "text",
+        "message": "=Dear {{ $json.Name }},  \n\nThis is a friendly reminder that your fee payment is due today ({{ $json[\"Due Date\"] }}).  Please complete the payment at your earliest convenience to avoid any interruption of services or late payment charges.  Payment Due Date: {{ $json[\"Due Date\"] }}  If you have already made the payment, please ignore this message.\nThank you for your prompt attention to this matter. \n\nBest regards,\nAccounts Department",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        400,
+        16
+      ],
+      "id": "f8b0adb6-9a98-4660-b1e5-b37a157b8eed",
+      "name": "Send a message",
+      "webhookId": "9d5bfac1-c5b1-4f95-bec4-da16b620b319",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CL31NWGyrxWbRrY1",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "9688fc8d-19ae-4e23-8a1e-0358d7437e01",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5e5ec9bb6e8e0fa0edf8a117dff55aa9302ded8833184af26b003b7651a809ec"
+  },
+  "id": "B6NIRLHsTAZdDgkZ",
+  "tags": [
+    {
+      "updatedAt": "2026-06-02T05:21:01.825Z",
+      "createdAt": "2026-06-02T05:21:01.825Z",
+      "id": "lHMCiwsvTf12Q9Z9",
+      "name": "operations"
+    }
+  ]
+}
